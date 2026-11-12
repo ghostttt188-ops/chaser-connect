@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="d-flex gap-2 mb-3">
+            <a href="/?tab=global" class="btn btn-sm {% if active_tab == 'global' %}btn-fb{% else %}btn-secondary{% endif %} fw-bold px-3 rounded-pill">🌍 Global Field Feed</a>
+            <a href="/?tab=my" class="btn btn-sm {% if active_tab == 'my' %}btn-fb{% else %}btn-secondary{% endif %} fw-bold px-3 rounded-pill">👤 My Chase Posts</a>
+        </div>
+
+        <div class="card p-3 mb-4 shadow-sm border border-warning">
+            <form action="/post" method="POST" enctype="multipart/form-data">
+                <div class="d-flex align-items-center mb-2">
+                    <img src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}" class="avatar-md me-2 chaser-img" onclick="openLightbox(this.src)" alt="Avatar">
+                    <textarea class="form-control rounded-pill" name="content" rows="1" placeholder="What's happening in the field, {{ current_user.username }}?" required style="resize: none;"></textarea>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-secondary">
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="text" class="form-control form-control-sm" name="location" placeholder="📍 Location (e.g. Norman, OK)">
+                        <input type="file" class="form-control form-control-sm text-light" name="post_image" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-fb btn-sm px-4">Post</button>
+                </div>
+            </form>
+        </div>
+        
+        <h5 class="mb-3 text-warning">{% if active_tab == 'my' %}Your Chase History{% else %}Nationwide Field News Feed{% endif %}</h5>
+        <div id="feed-container">
+            {% for post in posts %}
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ url_for('static', filename='uploads/' + post.author_user.profile_pic) }}" class="avatar-md me-3 chaser-img" onclick="openLightbox(this.src)" alt="Avatar">
+                            <div>
+                                <a href="{{ url_for('profile', user_id=post.author_user.id) }}" class="fw-bold text-light text-decoration-none h6 mb-0">{{ post.author_user.username }}</a>
+                                <br>
+                                {% if post.location %}
+                                <small class="text-info">📍 {{ post.location }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="/dm/{{ post.author_user.id }}" class="btn btn-outline-info btn-sm">📬 DM</a>
+                            {% if current_user.id == post.user_id %}
+                            <a href="{{ url_for('delete_post', post_id=post.id) }}" class="btn btn-outline-danger btn-sm">Delete</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="card-text fs-6 text-light">{{ post.content }}</p>
+                    {% if post.image_file %}
+                    <div class="mb-3 text-center bg-black rounded overflow-hidden">
+                        <img src="{{ url_for('static', filename='uploads/' + post.image_file) }}" class="img-fluid chaser-img" onclick="openLightbox(this.src)" alt="Chase Photo">
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center text-muted small mb-2 border-bottom border-secondary pb-2">
+                        <span>⚡ {{ post.likes|length }} Chaser Reactions</span>
+                        <span>💬 {{ post.comments|length }} Comments</span>
+                    </div>
+
+                    <div class="d-flex gap-1 mb-3 reaction-bar">
+                        <a href="/like/{{ post.id }}/⚡%20Bolt" class="btn btn-outline-warning btn-sm flex-fill">⚡ Bolt</a>
+                        <a href="/like/{{ post.id }}/🌪️%20Vortex" class="btn btn-outline-info btn-sm flex-fill">🌪️ Vortex</a>
+                        <a href="/like/{{ post.id }}/🔥%20Core" class="btn btn-outline-danger btn-sm flex-fill">🔥 Core</a>
+                        <a href="/like/{{ post.id }}/👍%20Like" class="btn btn-outline-primary btn-sm flex-fill">👍 Like</a>
+                    </div>
+
+                    <div class="mb-2 small text-muted">
+                        {% for like in post.likes %}
+                        <span class="badge bg-dark border border-secondary me-1">{{ like.author_user.username }}: {{ like.reaction_type }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="comments-section mt-2">
+                        <div class="mb-2">
+                            {% for comment in post.comments %}
+                            <div class="d-flex align-items-start mb-2 bg-black p-2 rounded border border-secondary">
+                                <img src="{{ url_for('static', filename='uploads/' + comment.author_user.profile_pic) }}" class="avatar-sm me-2 chaser-img" onclick="openLightbox(this.src)" style="width: 30px; height: 30px;" alt="Avatar">
+                                <div class="small">
+                                    <a href="{{ url_for('profile', user_id=comment.author_user.id) }}" class="fw-bold text-warning me-1 text-decoration-none">{{ comment.author_user.username }}:</a>
+                                    <span class="text-light">{{ comment.content }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <form action="/comment/{{ post.id }}" method="POST" class="d-flex gap-2 mt-2">
+                            <input type="text" class="form-control form-control-sm rounded-pill" name="content" placeholder="Write a comment..." required>
+                            <button type="submit" class="btn btn-outline-info btn-sm rounded-pill px-3">Reply</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div id="no-posts" class="text-center text-muted py-5">
+                <p>No posts on this feed yet. Be the first storm chaser to share an update!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    const socket = io();
+    socket.on('new_post', function(data) {
+        const noPosts = document.getElementById('no-posts');
+        if (noPosts) noPosts.remove();
+
+        const feedContainer = document.getElementById('feed-container');
+        const postCard = document.createElement('div');
+        postCard.className = 'card mb-3 shadow-sm';
+        
+        let imgHtml = '';
+        if (data.image_file) {
+            imgHtml = '<div class="mb-3 text-center bg-black rounded overflow-hidden"><img src="/static/uploads/' + data.image_file + '" class="img-fluid chaser-img" onclick="openLightbox(this.src)" alt="Chase Photo"></div>';
+        }
+
+        let locHtml = '';
+        if (data.location) {
+            locHtml = '<small class="text-info">📍 ' + data.location + '</small>';
+        }
+
+        let deleteBtn = '';
+        if ("{{ current_user.username }}" === data.username) {
+            deleteBtn = '<a href="/delete_post/' + data.post_id + '" class="btn btn-outline-danger btn-sm">Delete</a>';
+        }
+
+        postCard.innerHTML = '<div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><div class="d-flex align-items-center"><img src="/static/uploads/' + data.profile_pic + '" class="avatar-md me-3 chaser-img" onclick="openLightbox(this.src)" alt="Avatar"><div><span class="fw-bold text-light h6 mb-0">' + data.username + '</span><br>' + locHtml + '</div></div>' + deleteBtn + '</div><p class="card-text fs-6 text-light">' + data.content + '</p>' + imgHtml + '<div class="text-muted small">Just posted via live WebSocket stream!</div></div>';
+        feedContainer.prepend(postCard);
+    });
+</script>
+{% endblock %}

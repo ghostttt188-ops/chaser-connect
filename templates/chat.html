@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow mb-3 border border-warning">
+            <div class="card-header bg-dark border-bottom border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-warning">💬 Nationwide Field Command Chat</h5>
+                <small class="text-muted">Instant WebSocket Comms</small>
+            </div>
+            <div id="chat-box" class="card-body" style="height: 500px; overflow-y: scroll; display: flex; flex-direction: column; gap: 10px;">
+                {% for msg in messages %}
+                <div class="d-flex align-items-start p-2 rounded bg-black border border-secondary">
+                    <img src="{{ url_for('static', filename='uploads/' + msg.author_user.profile_pic) }}" class="avatar-sm me-3 chaser-img" onclick="openLightbox(this.src)" alt="Avatar">
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="/profile/{{ msg.author_user.id }}" class="fw-bold text-warning text-decoration-none">{{ msg.author_user.username }}</a>
+                        </div>
+                        <p class="mb-0 text-light fs-6 mt-1">{{ msg.content }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div id="no-chat" class="text-center text-muted py-5">
+                    <p>No chat messages yet. Drop the first transmission from the field!</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer bg-dark border-top border-secondary">
+                <form id="chat-form" class="d-flex gap-2">
+                    <input type="text" id="chat-input" class="form-control" placeholder="Transmit live field update..." required autocomplete="off">
+                    <button type="submit" class="btn btn-fb fw-bold px-4">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const socket = io();
+    const chatBox = document.getElementById('chat-box');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (text) {
+            socket.emit('send_message', { content: text });
+            chatInput.value = '';
+        }
+    });
+
+    socket.on('receive_message', function(data) {
+        const noChat = document.getElementById('no-chat');
+        if (noChat) noChat.remove();
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'd-flex align-items-start p-2 rounded bg-black border border-secondary';
+        msgDiv.innerHTML = '<img src="/static/uploads/' + data.profile_pic + '" class="avatar-sm me-3 chaser-img" onclick="openLightbox(this.src)" alt="Avatar"><div><div class="d-flex align-items-center gap-2"><a href="/profile/' + data.user_id + '" class="fw-bold text-warning text-decoration-none">' + data.username + '</a></div><p class="mb-0 text-light fs-6 mt-1">' + data.content + '</p></div>';
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+</script>
+{% endblock %}

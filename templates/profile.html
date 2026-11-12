@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card p-4 mb-4 shadow text-center border border-warning">
+            <div class="d-flex justify-content-center mb-3">
+                <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}" class="avatar-lg shadow chaser-img" onclick="openLightbox(this.src)" alt="Profile Avatar">
+            </div>
+            <h3 class="fw-bold text-light mb-1">{{ user.username }}</h3>
+            <p class="text-warning small mb-3">📍 Nationwide Storm Chaser & Spotter</p>
+            <p class="text-light bg-black p-3 rounded border border-secondary">{{ user.bio }}</p>
+            <div class="d-flex justify-content-center gap-2 mt-2">
+                {% if current_user.id == user.id %}
+                <button class="btn btn-outline-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#editProfileModal">⚙️ Edit Profile & PFP</button>
+                {% else %}
+                <a href="/dm/{{ user.id }}" class="btn btn-info btn-sm fw-bold">📬 Direct Message</a>
+                {% endif %}
+            </div>
+            <div class="text-muted small mt-3">{{ user.posts|length }} Field Reports Published</div>
+        </div>
+
+        <h5 class="mb-3 text-warning">Activity Feed for {{ user.username }}</h5>
+        {% for post in user.posts %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}" class="avatar-md me-3" alt="Avatar">
+                        <div>
+                            <h6 class="mb-0 fw-bold text-light">{{ user.username }}</h6>
+                            {% if post.location %}
+                            <small class="text-info">📍 {{ post.location }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if current_user.id == user.id %}
+                    <a href="{{ url_for('delete_post', post_id=post.id) }}" class="btn btn-outline-danger btn-sm">Delete</a>
+                    {% endif %}
+                </div>
+                <p class="card-text fs-6 text-light">{{ post.content }}</p>
+                {% if post.image_file %}
+                <div class="mb-3 text-center bg-black rounded overflow-hidden">
+                    <img src="{{ url_for('static', filename='uploads/' + post.image_file) }}" class="img-fluid chaser-img" onclick="openLightbox(this.src)" alt="Chase Photo">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+            <p>No posts published by this chaser yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

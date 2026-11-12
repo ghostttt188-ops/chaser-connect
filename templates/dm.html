@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card shadow">
+            <div class="card-header bg-dark border-bottom border-secondary">
+                <h6 class="mb-0 text-warning fw-bold">📇 Chaser Directory</h6>
+            </div>
+            <div class="card-body p-2" style="max-height: 550px; overflow-y: auto;">
+                <div class="list-group list-group-flush">
+                    {% for u in users %}
+                    <a href="/dm/{{ u.id }}" class="list-group-item list-group-item-action bg-transparent text-light d-flex align-items-center gap-3 border-bottom border-secondary {% if recipient.id == u.id %}active bg-secondary{% endif %}">
+                        <img src="{{ url_for('static', filename='uploads/' + u.profile_pic) }}" class="avatar-sm" alt="User">
+                        <div>
+                            <div class="fw-bold">{{ u.username }}</div>
+                            <small class="text-muted text-truncate d-inline-block" style="max-width: 180px;">{{ u.bio }}</small>
+                        </div>
+                    </a>
+                    {% else %}
+                    <div class="text-center text-muted p-3">No other spotters registered yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow mb-3">
+            <div class="card-header bg-dark border-bottom border-secondary d-flex align-items-center gap-3">
+                <img src="{{ url_for('static', filename='uploads/' + recipient.profile_pic) }}" class="avatar-sm" alt="Recipient">
+                <div>
+                    <h5 class="mb-0 text-warning fw-bold">Direct Message with {{ recipient.username }}</h5>
+                    <small class="text-muted">{{ recipient.bio }}</small>
+                </div>
+            </div>
+            <div id="dm-box" class="card-body" style="height: 450px; overflow-y: scroll; display: flex; flex-direction: column; gap: 10px;">
+                {% for dm in dms %}
+                <div class="d-flex align-items-start p-2 rounded bg-black border border-secondary {% if dm.sender_id == current_user.id %}ms-auto border-warning{% endif %}" style="max-width: 80%;">
+                    <img src="{{ url_for('static', filename='uploads/' + dm.sender.profile_pic) }}" class="avatar-sm me-2 chaser-img" onclick="openLightbox(this.src)" style="width: 30px; height: 30px;" alt="Avatar">
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold text-warning small">{{ dm.sender.username }}</span>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ dm.timestamp.strftime('%H:%M') }}</small>
+                        </div>
+                        <p class="mb-0 text-light fs-6 mt-1">{{ dm.content }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div id="no-dms" class="text-center text-muted py-5">
+                    <p>No messages with {{ recipient.username }} yet. Send the first secure transmission!</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer bg-dark border-top border-secondary">
+                <form id="dm-form" action="/send_dm/{{ recipient.id }}" method="POST" class="d-flex gap-2">
+                    <input type="text" id="dm-input" class="form-control" name="content" placeholder="Transmit private message to {{ recipient.username }}..." required autocomplete="off">
+                    <button type="submit" class="btn btn-fb fw-bold px-4">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const socket = io();
+    const dmBox = document.getElementById('dm-box');
+    dmBox.scrollTop = dmBox.scrollHeight;
+
+    const currentUserId = {{ current_user.id }};
+    const recipientId = {{ recipient.id }};
+
+    socket.on('receive_dm', function(data) {
+        if ((data.sender_id === currentUserId && data.recipient_id === recipientId) ||
+            (data.sender_id === recipientId && data.recipient_id === currentUserId)) {
+            
+            const noDms = document.getElementById('no-dms');
+            if (noDms) noDms.remove();
+
+            const isMe = data.sender_id === currentUserId;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'd-flex align-items-start p-2 rounded bg-black border border-secondary ' + (isMe ? 'ms-auto border-warning' : '');
+            msgDiv.style.maxWidth = '80%';
+            msgDiv.innerHTML = '<img src="/static/uploads/' + data.sender_pic + '" class="avatar-sm me-2 chaser-img" onclick="openLightbox(this.src)" style="width: 30px; height: 30px;" alt="Avatar"><div><div class="d-flex align-items-center gap-2"><span class="fw-bold text-warning small">' + data.sender_username + '</span><small class="text-muted" style="font-size: 0.7rem;">Just now</small></div><p class="mb-0 text-light fs-6 mt-1">' + data.content + '</p></div>';
+            dmBox.appendChild(msgDiv);
+            dmBox.scrollTop = dmBox.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}

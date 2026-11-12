@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="card shadow mb-4 border border-danger">
+            <div class="card-header bg-dark border-bottom border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-danger">📈 NOAA / Storm Prediction Center (SPC) Convective Risk</h5>
+                <span class="badge bg-danger">Live Official Feed</span>
+            </div>
+            <div class="card-body text-center">
+                <p class="text-light mb-3">Official convective outlooks providing probabilistic tornado, hail, and damaging wind forecasts.</p>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="card bg-black border border-secondary p-3">
+                            <h6 class="text-warning fw-bold">Day 1 Convective Risk</h6>
+                            <p class="small text-muted mb-2">Today's severe weather outlook</p>
+                            <img src="https://www.spc.noaa.gov/products/outlook/day1otlk_0100_cat.gif" class="img-fluid rounded border border-secondary chaser-img mb-2" onclick="openLightbox(this.src)" alt="Day 1 Outlook">
+                            <a href="https://www.spc.noaa.gov/products/outlook/day1otlk.html" target="_blank" class="btn btn-outline-warning btn-sm">Full Day 1 Discussion</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-black border border-secondary p-3">
+                            <h6 class="text-warning fw-bold">Day 2 Convective Risk</h6>
+                            <p class="small text-muted mb-2">Tomorrow's risk area</p>
+                            <img src="https://www.spc.noaa.gov/products/outlook/day2otlk_1730_cat.gif" class="img-fluid rounded border border-secondary chaser-img mb-2" onclick="openLightbox(this.src)" alt="Day 2 Outlook">
+                            <a href="https://www.spc.noaa.gov/products/outlook/day2otlk.html" target="_blank" class="btn btn-outline-warning btn-sm">Full Day 2 Discussion</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-black border border-secondary p-3">
+                            <h6 class="text-warning fw-bold">Day 3 Convective Risk</h6>
+                            <p class="small text-muted mb-2">Extended threat outlook</p>
+                            <img src="https://www.spc.noaa.gov/products/outlook/day3otlk_1500_cat.gif" class="img-fluid rounded border border-secondary chaser-img mb-2" onclick="openLightbox(this.src)" alt="Day 3 Outlook">
+                            <a href="https://www.spc.noaa.gov/products/outlook/day3otlk.html" target="_blank" class="btn btn-outline-warning btn-sm">Full Day 3 Discussion</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
